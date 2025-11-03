@@ -1,0 +1,240 @@
+import java.util.ArrayList;
+
+/**
+ * Clase principal (main) para demostrar la funcionalidad extendida de la Billetera Virtual.
+ * Utiliza UtilidadesJOptionPane para toda la interacción mediante un menú.
+ */
+public class MainBilletera {
+    
+    // Constante para la tasa de interés anual simulada
+    private static final double TASA_INTERES_ANUAL = 0.05; // 5%
+
+    public static void main(String[] args) {
+        BilleteraVirtual billetera = new BilleteraVirtual();
+        
+        // --- 1. INICIALIZACIÓN Y REGISTRO DE USUARIOS DE PRUEBA ---
+        UtilidadesJOptionPane.mostrarMensaje(
+            "Bienvenido al sistema de Billetera Virtual (DEMO).\n" +
+            "Se registrará un usuario de prueba para la demostración.", 
+            "Inicio de la Aplicación"
+        );
+        
+        Usuario usuarioDemo = new Usuario("Demo User", "demo@app.com", "123");
+        billetera.registrarUsuario(usuarioDemo);
+        
+        // Añadir una tarjeta de prueba
+        Tarjeta tarjetaDemo = new Tarjeta("4561234567890123", "Débito", "12/26", "123");
+        usuarioDemo.agregarTarjeta(tarjetaDemo);
+        
+        // Activar seguridad adicional de prueba
+        usuarioDemo.getSeguridad().activarTFA(true); 
+        
+        // --- 2. LOOP PRINCIPAL DE LA APLICACIÓN ---
+        int opcionPrincipal = 0;
+        
+        while (opcionPrincipal != -1) {
+            String[] opcionesMenuPrincipal = {"1. Iniciar Sesión", "2. Ver Reporte Global", "3. Salir"};
+            opcionPrincipal = UtilidadesJOptionPane.mostrarMenu("Menú Principal", "Seleccione una opción:", opcionesMenuPrincipal);
+            
+            if (opcionPrincipal == 0) { // Iniciar Sesión
+                iniciarSesion(billetera);
+                if (billetera.getUsuarioActivo() != null) {
+                    menuUsuario(billetera);
+                }
+            } else if (opcionPrincipal == 1) { // Ver Reporte Global
+                String reporte = billetera.generarReporteGlobal();
+                UtilidadesJOptionPane.mostrarMensaje(reporte, "Reporte Global");
+            } else if (opcionPrincipal == 2 || opcionPrincipal == -1) { // Salir
+                UtilidadesJOptionPane.mostrarMensaje("Gracias por usar la Billetera Virtual. ¡Hasta pronto!", "Adiós");
+                opcionPrincipal = -1;
+            }
+        }
+    }
+    
+    /**
+     * Maneja el flujo de inicio de sesión.
+     */
+    private static void iniciarSesion(BilleteraVirtual billetera) {
+        String email = UtilidadesJOptionPane.obtenerString("Ingrese Email (demo@app.com):");
+        if (email == null) return;
+        
+        String password = UtilidadesJOptionPane.obtenerString("Ingrese Contraseña (123):");
+        if (password == null) return;
+        
+        if (!billetera.loguearUsuario(email, password)) {
+            UtilidadesJOptionPane.mostrarMensaje("Email o Contraseña inválida. Intente de nuevo.", "Error de Login");
+        }
+    }
+
+    /**
+     * Menú principal para el usuario logueado.
+     */
+    private static void menuUsuario(BilleteraVirtual billetera) {
+        Usuario u = billetera.getUsuarioActivo();
+        if (u == null) return;
+
+        int opcionUsuario = 0;
+        while (opcionUsuario != -1) {
+            String[] opcionesMenuUsuario = {
+                "1. Ver Saldo y Movimientos", 
+                "2. Depositar Fondos", 
+                "3. Realizar Transferencia",
+                "4. Gestionar Tarjetas",
+                "5. Ver Notificaciones",
+                "6. Configuración de Seguridad",
+                "7. Calcular Intereses (Simulación)",
+                "8. Cerrar Sesión"
+            };
+            
+            opcionUsuario = UtilidadesJOptionPane.mostrarMenu("Menú de " + u.getNombre(), "Saldo Actual: $" + String.format("%.2f", u.getCuentaPrincipal().getSaldo()) + "\nSeleccione una acción:", opcionesMenuUsuario);
+
+            if (opcionUsuario == 0) { // Ver Saldo y Movimientos
+                mostrarSaldoYMovimientos(u);
+            } else if (opcionUsuario == 1) { // Depositar
+                realizarDeposito(u);
+            } else if (opcionUsuario == 2) { // Transferir
+                realizarTransferencia(u, billetera);
+            } else if (opcionUsuario == 3) { // Gestionar Tarjetas
+                menuTarjetas(u);
+            } else if (opcionUsuario == 4) { // Ver Notificaciones
+                mostrarNotificaciones(u);
+            } else if (opcionUsuario == 5) { // Configuración de Seguridad
+                menuSeguridad(u);
+            } else if (opcionUsuario == 6) { // Calcular Intereses
+                u.getCuentaPrincipal().calcularIntereses(TASA_INTERES_ANUAL);
+            } else if (opcionUsuario == 7 || opcionUsuario == -1) { // Cerrar Sesión
+                billetera.desloguearUsuario();
+                opcionUsuario = -1; // Sale del loop
+            }
+        }
+    }
+
+    /**
+     * Muestra el saldo y los últimos movimientos.
+     */
+    private static void mostrarSaldoYMovimientos(Usuario u) {
+        String info = "Saldo Disponible: $" + String.format("%.2f", u.getCuentaPrincipal().getSaldo()) + "\n" +
+                      "CVU: " + u.getCuentaPrincipal().getCvu() + "\n\n" +
+                      u.getCuentaPrincipal().getHistorial().obtenerMovimientos();
+        UtilidadesJOptionPane.mostrarMensaje(info, "Saldo y Movimientos");
+    }
+
+    /**
+     * Maneja el depósito de fondos.
+     */
+    private static void realizarDeposito(Usuario u) {
+        double monto = UtilidadesJOptionPane.obtenerDouble("Ingrese el monto a depositar:");
+        if (monto > 0) {
+            if (u.getCuentaPrincipal().depositar(monto)) {
+                UtilidadesJOptionPane.mostrarMensaje("Depósito de $" + String.format("%.2f", monto) + " exitoso. Nuevo saldo: $" + String.format("%.2f", u.getCuentaPrincipal().getSaldo()), "Depósito Exitoso");
+            } else {
+                UtilidadesJOptionPane.mostrarMensaje("Error al depositar. El monto debe ser positivo.", "Error");
+            }
+        }
+    }
+
+    /**
+     * Maneja el flujo de transferencia de fondos.
+     */
+    private static void realizarTransferencia(Usuario uOrigen, BilleteraVirtual billetera) {
+        String cvuDestino = UtilidadesJOptionPane.obtenerString("Ingrese el CVU del destinatario:");
+        if (cvuDestino == null) return;
+        
+        Usuario uDestino = billetera.buscarUsuario(cvuDestino); // En la vida real, se buscaría la cuenta por CVU
+        if (uDestino == null || uDestino == uOrigen) {
+             UtilidadesJOptionPane.mostrarMensaje("Destinatario no encontrado o CVU inválido.", "Error de Transferencia");
+             return;
+        }
+
+        double monto = UtilidadesJOptionPane.obtenerDouble("Ingrese el monto a transferir a " + uDestino.getNombre() + ":");
+        if (monto <= 0 || monto > uOrigen.getCuentaPrincipal().getSaldo()) {
+            UtilidadesJOptionPane.mostrarMensaje("Monto inválido o saldo insuficiente. Saldo actual: $" + String.format("%.2f", uOrigen.getCuentaPrincipal().getSaldo()), "Error de Monto");
+            return;
+        }
+        
+        Transaccion t = new Transaccion(monto, uOrigen.getCuentaPrincipal(), uDestino.getCuentaPrincipal());
+
+        if (t.procesar()) {
+            UtilidadesJOptionPane.mostrarMensaje("Transferencia completada:\n" + t.toString() + "\nNuevo Saldo: $" + String.format("%.2f", uOrigen.getCuentaPrincipal().getSaldo()), "Transferencia Exitosa");
+            uOrigen.getNotificaciones().add(new Notificacion("Transferencia de $" + String.format("%.2f", monto) + " enviada a " + uDestino.getNombre() + "."));
+            uDestino.getNotificaciones().add(new Notificacion("¡Has recibido una transferencia de $" + String.format("%.2f", monto) + " de " + uOrigen.getNombre() + "!"));
+        } else {
+            UtilidadesJOptionPane.mostrarMensaje("La transferencia falló. Verifique el saldo.", "Error de Transacción");
+        }
+    }
+    
+    /**
+     * Muestra y gestiona las notificaciones.
+     */
+    private static void mostrarNotificaciones(Usuario u) {
+        List<Notificacion> notis = u.getNotificaciones();
+        if (notis.isEmpty()) {
+            UtilidadesJOptionPane.mostrarMensaje("No hay notificaciones nuevas.", "Notificaciones");
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("--- Notificaciones ---\n");
+        int nuevas = 0;
+        for (int i = notis.size() - 1; i >= 0 && i >= notis.size() - 10; i--) {
+            Notificacion n = notis.get(i);
+            sb.append(n.toString()).append("\n");
+            if (!n.isLeida()) {
+                n.marcarComoLeida();
+                nuevas++;
+            }
+        }
+        
+        String mensajeFinal = (nuevas > 0) ? 
+                              sb.toString() + "\n" + nuevas + " notificaciones marcadas como leídas." : 
+                              sb.toString();
+        
+        UtilidadesJOptionPane.mostrarMensaje(mensajeFinal, "Notificaciones Recientes");
+    }
+    
+    /**
+     * Menú para gestionar tarjetas.
+     */
+    private static void menuTarjetas(Usuario u) {
+        String[] opciones = {"1. Ver Tarjetas", "2. Agregar Nueva Tarjeta", "3. Volver"};
+        int seleccion = UtilidadesJOptionPane.mostrarMenu("Gestión de Tarjetas", "Seleccione una opción:", opciones);
+        
+        if (seleccion == 0) {
+            UtilidadesJOptionPane.mostrarMensaje(u.obtenerListaTarjetas(), "Tarjetas Asociadas");
+        } else if (seleccion == 1) {
+            // Flujo simplificado para agregar tarjeta
+            String numero = UtilidadesJOptionPane.obtenerString("Ingrese Número de Tarjeta:");
+            String tipo = UtilidadesJOptionPane.obtenerString("Ingrese Tipo (Débito/Crédito):");
+            String vencimiento = UtilidadesJOptionPane.obtenerString("Ingrese Vencimiento (MM/AA):");
+            String cvv = UtilidadesJOptionPane.obtenerString("Ingrese CVV (3 o 4 dígitos):");
+
+            if (numero != null && tipo != null && vencimiento != null && cvv != null) {
+                 u.agregarTarjeta(new Tarjeta(numero, tipo, vencimiento, cvv));
+            }
+        }
+    }
+    
+    /**
+     * Menú para configurar la seguridad.
+     */
+    private static void menuSeguridad(Usuario u) {
+        Seguridad s = u.getSeguridad();
+        String estadoTFA = s.isTfaActivado() ? " (ACTIVO)" : " (INACTIVO)";
+        String estadoHuella = s.isHuellaActivada() ? " (ACTIVA)" : " (INACTIVA)";
+        
+        String[] opciones = {
+            "1. Alternar 2FA" + estadoTFA, 
+            "2. Alternar Huella" + estadoHuella, 
+            "3. Volver"
+        };
+        
+        int seleccion = UtilidadesJOptionPane.mostrarMenu("Configuración de Seguridad", "Seleccione una opción:", opciones);
+        
+        if (seleccion == 0) {
+            s.activarTFA(!s.isTfaActivado());
+        } else if (seleccion == 1) {
+            s.activarHuella(!s.isHuellaActivada());
+        }
+    }
+}
+
