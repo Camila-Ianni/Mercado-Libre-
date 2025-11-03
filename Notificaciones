@@ -1,0 +1,46 @@
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
+
+/**
+ * Clase que maneja las notificaciones enviadas al usuario.
+ * Corresponde a la clase 'Notificación' del diagrama UML.
+ */
+public class Notificacion {
+    private String idNotificacion;
+    private String mensaje;
+    private LocalDateTime fechaHora;
+    private boolean leida;
+
+    // Constructor
+    public Notificacion(String mensaje) {
+        this.idNotificacion = UUID.randomUUID().toString();
+        this.mensaje = mensaje;
+        this.fechaHora = LocalDateTime.now();
+        this.leida = false;
+    }
+
+    // Método enviar() del diagrama (simula el envío y muestra en la consola o UI)
+    public void enviar() {
+        String horaFormateada = fechaHora.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        System.out.println("[NOTIFICACION ENVIADA - " + horaFormateada + "] " + mensaje);
+    }
+
+    // Método marcarComoLeida() del diagrama
+    public void marcarComoLeida() {
+        this.leida = true;
+    }
+
+    @Override
+    public String toString() {
+        String estado = leida ? " (Leída)" : " (NUEVA)";
+        String fecha = fechaHora.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        return "[" + fecha + "]" + estado + ": " + mensaje;
+    }
+
+    // Getter para saber si es nueva
+    public boolean isLeida() {
+        return leida;
+    }
+}
+
