@@ -1,0 +1,55 @@
+import java.util.UUID;
+
+/**
+ * Clase que maneja las funciones de seguridad y autenticación avanzada.
+ * Corresponde a la clase 'Seguridad' del diagrama UML.
+ */
+public class Seguridad {
+    private boolean huellaActivada; // boolean huella()
+    private boolean tfaActivado;    // boolean tfa()
+    private Usuario usuarioAsociado;
+
+    // Constructor
+    public Seguridad(Usuario usuarioAsociado) {
+        this.usuarioAsociado = usuarioAsociado;
+        this.huellaActivada = false;
+        this.tfaActivado = false;
+    }
+
+    // Método activarHuella(boolean estado)
+    public void activarHuella(boolean estado) {
+        this.huellaActivada = estado;
+        UtilidadesJOptionPane.mostrarMensaje("Huella digital " + (estado ? "ACTIVADA" : "DESACTIVADA") + ".", "Seguridad");
+    }
+
+    // Método activarTFA(boolean estado)
+    public void activarTFA(boolean estado) {
+        this.tfaActivado = estado;
+        UtilidadesJOptionPane.mostrarMensaje("Autenticación de Dos Factores (2FA) " + (estado ? "ACTIVADA" : "DESACTIVADA") + ".", "Seguridad");
+    }
+
+    // Método verificarAcceso() del diagrama (simplificado)
+    public boolean verificarAcceso() {
+        if (huellaActivada || tfaActivado) {
+            String codigo = UtilidadesJOptionPane.obtenerString("Ingrese código de seguridad (simulación: ingrese '1234'):");
+            return "1234".equals(codigo);
+        }
+        return true; // No hay seguridad adicional activa
+    }
+
+    // Método registrarActividad(String actividad)
+    public void registrarActividad(String actividad) {
+        // En una app real, esto guardaría en una base de datos.
+        System.out.println("[LOG SEGURIDAD - " + usuarioAsociado.getNombre() + "]: " + actividad);
+    }
+
+    // Getters del diagrama
+    public boolean isHuellaActivada() {
+        return huellaActivada;
+    }
+
+    public boolean isTfaActivado() {
+        return tfaActivado;
+    }
+}
+
