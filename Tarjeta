@@ -1,0 +1,46 @@
+/**
+ * Clase que representa una Tarjeta de débito/crédito asociada a la cuenta del usuario.
+ * Corresponde a la clase 'Tarjeta' del diagrama UML.
+ */
+public class Tarjeta {
+    private String numero; // String para manejar números largos y ceros iniciales
+    private String tipo; // Débito, Crédito
+    private String localidadVencimiento; // Simplificado: mes/año
+    private String cvv;
+
+    // Constructor
+    public Tarjeta(String numero, String tipo, String localidadVencimiento, String cvv) {
+        this.numero = numero;
+        this.tipo = tipo;
+        this.localidadVencimiento = localidadVencimiento;
+        this.cvv = cvv;
+    }
+
+    // Método asociar() del diagrama (simplificado)
+    public boolean asociar() {
+        // Simulación de asociación exitosa
+        UtilidadesJOptionPane.mostrarMensaje("Tarjeta " + tipo + " terminada en " + numero.substring(numero.length() - 4) + " asociada con éxito.", "Gestión de Tarjeta");
+        return true;
+    }
+
+    // Método validar() del diagrama (Verifica formato básico)
+    public boolean validar() {
+        if (numero.length() < 13 || numero.length() > 19) {
+            return false;
+        }
+        if (cvv.length() != 3 && cvv.length() != 4) {
+            return false;
+        }
+        return true;
+    }
+    
+    // Getters necesarios
+    public String getNumeroOculto() {
+        return "**** **** **** " + numero.substring(numero.length() - 4);
+    }
+    
+    public String getTipo() {
+        return tipo;
+    }
+}
+
