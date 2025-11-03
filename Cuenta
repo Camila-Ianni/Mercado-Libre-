@@ -1,0 +1,102 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Clase que representa una Cuenta bancaria o virtual.
+ * Corresponde a la clase 'Cuenta' del diagrama UML.
+ */
+public class Cuenta {
+    private String tipo;
+    private String cvu;
+    private double saldo;
+    private Historial historial; // Agregamos la referencia a Historial
+
+    // Constructor
+    public Cuenta(String tipo) {
+        this.tipo = tipo;
+        this.saldo = 0.0;
+        this.cvu = generarCVU();
+        this.historial = new Historial(); // Inicializamos el historial
+        this.historial.agregarTransaccion(
+            new Transaccion(0.0, this, this), // Transacción ficticia de creación
+            "Cuenta " + tipo + " creada y CVU generado: " + this.cvu
+        );
+    }
+
+    // Método generarCVU() del diagrama
+    private String generarCVU() {
+        // Generación simple de un CVU único de 22 caracteres
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 22);
+    }
+
+    // Método depositar(double monto) del diagrama
+    public boolean depositar(double monto) {
+        if (monto > 0) {
+            this.saldo += monto;
+            String movimiento = "Depósito de: $" + String.format("%.2f", monto);
+            historial.agregarTransaccion(new Transaccion(monto, this, this), movimiento);
+            return true;
+        }
+        return false;
+    }
+
+    // Método retirar(double monto) del diagrama
+    public boolean retirar(double monto) {
+        if (monto > 0 && this.saldo >= monto) {
+            this.saldo -= monto;
+            String movimiento = "Retiro de: $" + String.format("%.2f", monto);
+            historial.agregarTransaccion(new Transaccion(monto, this, this), movimiento);
+            return true;
+        }
+        return false;
+    }
+
+    // Método transferir(Cuenta destino, double monto) del diagrama
+    public boolean transferir(Cuenta destino, double monto) {
+        // Se añade una pequeña comisión de simulación para complejidad simple
+        double comision = monto * 0.005; // 0.5% de comisión
+        double montoTotalRetirar = monto + comision;
+        
+        if (this.retirar(montoTotalRetirar)) {
+            destino.depositar(monto); // El destino recibe el monto completo
+            
+            // Registro detallado en el historial del origen
+            String movimientoOrigen = "Transferencia enviada de: $" + String.format("%.2f", monto) + 
+                                      " (Comisión: $" + String.format("%.2f", comision) + 
+                                      ") a CVU: " + destino.getCvu().substring(0, 10) + "...";
+            historial.agregarTransaccion(new Transaccion(monto, this, destino), movimientoOrigen);
+            
+            // Registro detallado en el historial del destino
+            String movimientoDestino = "Transferencia recibida de: $" + String.format("%.2f", monto) + 
+                                       " desde CVU: " + this.cvu.substring(0, 10) + "...";
+            destino.getHistorial().agregarTransaccion(new Transaccion(monto, this, destino), movimientoDestino);
+            
+            return true;
+        }
+        return false;
+    }
+    
+    // Nueva función: calcularIntereses (simula ganancia pasiva)
+    public void calcularIntereses(double tasaAnual) {
+        double interesMensual = this.saldo * (tasaAnual / 12);
+        this.saldo += interesMensual;
+        String movimiento = "Acreditación de Intereses (Tasa Anual " + (tasaAnual * 100) + "%): $" + String.format("%.2f", interesMensual);
+        historial.agregarTransaccion(new Transaccion(interesMensual, this, this), movimiento);
+        UtilidadesJOptionPane.mostrarMensaje(movimiento, "Intereses Calculados");
+    }
+
+    // Getters
+    public String getCvu() {
+        return cvu;
+    }
+
+    public double getSaldo() {
+        return saldo;
+    }
+
+    public Historial getHistorial() {
+        return historial;
+    }
+}
+
