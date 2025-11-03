@@ -1,0 +1,73 @@
+import javax.swing.JOptionPane;
+
+/**
+ * Clase de utilidad para manejar toda la interacción con el usuario mediante JOptionPane.
+ * Centraliza la lógica de entrada/salida para el front-end de la aplicación.
+ */
+public class UtilidadesJOptionPane {
+
+    /**
+     * Muestra un mensaje al usuario.
+     * @param mensaje El texto que se mostrará.
+     * @param titulo El título de la ventana de diálogo.
+     */
+    public static void mostrarMensaje(String mensaje, String titulo) {
+        JOptionPane.showMessageDialog(null, mensaje, titulo, JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /**
+     * Pide una entrada de texto al usuario.
+     * @param mensaje El texto de la solicitud.
+     * @return El String introducido por el usuario, o null si cancela.
+     */
+    public static String obtenerString(String mensaje) {
+        return JOptionPane.showInputDialog(null, mensaje);
+    }
+
+    /**
+     * Pide una entrada numérica (double) al usuario.
+     * @param mensaje El texto de la solicitud.
+     * @return El valor double introducido, o Double.NaN si hay un error o se cancela.
+     */
+    public static double obtenerDouble(String mensaje) {
+        String input = obtenerString(mensaje);
+        if (input != null) {
+            try {
+                return Double.parseDouble(input);
+            } catch (NumberFormatException e) {
+                mostrarMensaje("Entrada inválida. Por favor, ingrese un número válido.", "Error de Formato");
+                return Double.NaN;
+            }
+        }
+        return Double.NaN;
+    }
+
+    /**
+     * Muestra un menú de opciones y obtiene la selección del usuario.
+     * @param titulo Título de la ventana.
+     * @param mensaje Mensaje o pregunta.
+     * @param opciones Array de Strings con las opciones.
+     * @return El índice de la opción seleccionada (0-basado), o -1 si cancela/cierra.
+     */
+    public static int mostrarMenu(String titulo, String mensaje, String[] opciones) {
+        Object seleccion = JOptionPane.showInputDialog(
+            null,
+            mensaje,
+            titulo,
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            opciones,
+            opciones[0]
+        );
+        
+        if (seleccion != null) {
+            for (int i = 0; i < opciones.length; i++) {
+                if (opciones[i].equals(seleccion)) {
+                    return i;
+                }
+            }
+        }
+        return -1; // Opción de salida o cancelación
+    }
+}
+
