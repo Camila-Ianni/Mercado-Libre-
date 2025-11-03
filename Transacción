@@ -1,0 +1,64 @@
+import java.util.UUID;
+
+/**
+ * Clase que representa una Transacción entre cuentas.
+ * Corresponde a la clase 'Transacción' del diagrama UML.
+ */
+public class Transaccion {
+    private String idTransaccion;
+    private double monto;
+    private Cuenta cuentaOrigen;
+    private Cuenta cuentaDestino;
+    private String estado; // Pendiente, Completada, Cancelada
+
+    // Constructor
+    public Transaccion(double monto, Cuenta cuentaOrigen, Cuenta cuentaDestino) {
+        this.idTransaccion = UUID.randomUUID().toString();
+        this.monto = monto;
+        this.cuentaOrigen = cuentaOrigen;
+        this.cuentaDestino = cuentaDestino;
+        this.estado = "Pendiente";
+    }
+
+    // Método procesar() del diagrama
+    public boolean procesar() {
+        if ("Pendiente".equals(this.estado)) {
+            // El retiro y depósito se hace dentro del método transferir de Cuenta
+            if (cuentaOrigen.transferir(cuentaDestino, monto)) {
+                this.estado = "Completada";
+                return true;
+            } else {
+                this.estado = "Fallida";
+                return false;
+            }
+        }
+        return false;
+    }
+
+    // Método cancelar() del diagrama
+    public boolean cancelar() {
+        if ("Pendiente".equals(this.estado)) {
+            this.estado = "Cancelada";
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "ID: " + idTransaccion.substring(0, 8) + 
+               "... | Monto: $" + String.format("%.2f", monto) + 
+               " | Destino CVU: " + cuentaDestino.getCvu().substring(0, 10) + 
+               "... | Estado: " + estado;
+    }
+
+    // Getters (para la demostración)
+    public double getMonto() {
+        return monto;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+}
+
