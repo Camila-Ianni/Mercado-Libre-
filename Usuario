@@ -1,0 +1,117 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Clase que representa un Usuario de la billetera virtual.
+ * Corresponde a la clase 'Usuario' del diagrama UML, con integración de Login y Seguridad.
+ */
+public class Usuario {
+    private String idUsuario;
+    private String nombre;
+    private String email;
+    private Cuenta cuentaPrincipal;
+    private List<Tarjeta> tarjetas;
+    private List<Notificacion> notificaciones;
+    private Login login; 
+    private Seguridad seguridad;
+
+    // Constructor
+    public Usuario(String nombre, String email, String password) {
+        this.idUsuario = UUID.randomUUID().toString();
+        this.nombre = nombre;
+        this.email = email;
+        this.cuentaPrincipal = new Cuenta("Principal");
+        this.tarjetas = new ArrayList<>();
+        this.notificaciones = new ArrayList<>();
+        this.login = new Login(email, password); 
+        this.seguridad = new Seguridad(this);
+        
+        // Notificación de bienvenida
+        this.notificaciones.add(new Notificacion("¡Bienvenido/a a tu nueva billetera, " + nombre + "! Tu CVU es " + cuentaPrincipal.getCvu()));
+    }
+
+    // Método registrar() del diagrama (simplificado)
+    public void registrar() {
+        UtilidadesJOptionPane.mostrarMensaje("Usuario " + nombre + " con ID: " + idUsuario.substring(0, 8) + "... registrado con éxito.", "Registro Exitoso");
+    }
+
+    // Método iniciarSesion(String user, String pass)
+    public boolean iniciarSesion(String user, String pass) {
+        if(login.iniciarSesion(user, pass)) {
+             // Aplicar chequeo de seguridad adicional si está activado
+            if(seguridad.isHuellaActivada() || seguridad.isTfaActivado()) {
+                if(!seguridad.verificarAcceso()) {
+                    login.cerrarSesion(); // Falló el 2FA o huella
+                    UtilidadesJOptionPane.mostrarMensaje("Fallo en verificación de seguridad adicional.", "Acceso Denegado");
+                    return false;
+                }
+            }
+            seguridad.registrarActividad("Inicio de sesión exitoso.");
+            return true;
+        }
+        return false;
+    }
+    
+    // Método cerrarSesion()
+    public void cerrarSesion() {
+        seguridad.registrarActividad("Cierre de sesión.");
+        login.cerrarSesion();
+    }
+
+    // Método actualizarDatos() del diagrama (simplificado)
+    public void actualizarDatos(String nuevoNombre, String nuevoEmail) {
+        this.nombre = nuevoNombre;
+        this.email = nuevoEmail;
+        UtilidadesJOptionPane.mostrarMensaje("Datos de " + nombre + " actualizados.", "Actualización");
+    }
+    
+    // Nueva función: agregarTarjeta
+    public void agregarTarjeta(Tarjeta tarjeta) {
+        if (tarjeta.validar()) {
+            tarjetas.add(tarjeta);
+            tarjeta.asociar();
+            notificaciones.add(new Notificacion("Nueva tarjeta " + tarjeta.getTipo() + " asociada."));
+        } else {
+            UtilidadesJOptionPane.mostrarMensaje("La tarjeta no pasó la validación de formato.", "Error de Tarjeta");
+        }
+    }
+    
+    // Nueva función: obtenerListaTarjetas
+    public String obtenerListaTarjetas() {
+        if (tarjetas.isEmpty()) return "No hay tarjetas asociadas.";
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("--- Tarjetas Asociadas ---\n");
+        for (Tarjeta t : tarjetas) {
+            sb.append("- ").append(t.getTipo()).append(": ").append(t.getNumeroOculto()).append("\n");
+        }
+        return sb.toString();
+    }
+    
+    // Getters
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public Cuenta getCuentaPrincipal() {
+        return cuentaPrincipal;
+    }
+    
+    public List<Notificacion> getNotificaciones() {
+        return notificaciones;
+    }
+    
+    public Seguridad getSeguridad() {
+        return seguridad;
+    }
+    
+    public boolean isSesionIniciada() {
+        return login.isSesionIniciada();
+    }
+}
+
