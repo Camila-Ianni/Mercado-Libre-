@@ -1,0 +1,40 @@
+/**
+ * Clase que simula la gestión de la sesión y las credenciales.
+ * Corresponde a la clase 'Login' del diagrama UML.
+ */
+public class Login {
+    private String usuario; // Email o nombre de usuario
+    private String contrasena;
+    private boolean sesionIniciada;
+
+    // Constructor
+    public Login(String usuario, String contrasena) {
+        this.usuario = usuario;
+        this.contrasena = contrasena;
+        this.sesionIniciada = false;
+    }
+
+    // Método iniciarSesion() del diagrama
+    public boolean iniciarSesion(String user, String pass) {
+        if (this.usuario.equals(user) && this.contrasena.equals(pass)) {
+            this.sesionIniciada = true;
+            UtilidadesJOptionPane.mostrarMensaje("Inicio de sesión exitoso para " + usuario + ".", "Login");
+            return true;
+        }
+        return false;
+    }
+
+    // Método cerrarSesion() del diagrama
+    public void cerrarSesion() {
+        if (sesionIniciada) {
+            this.sesionIniciada = false;
+            UtilidadesJOptionPane.mostrarMensaje("Sesión cerrada.", "Login");
+        }
+    }
+
+    // Getter para verificar estado de sesión
+    public boolean isSesionIniciada() {
+        return sesionIniciada;
+    }
+}
+
