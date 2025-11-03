@@ -1,0 +1,74 @@
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Clase que representa el sistema principal de la Billetera Virtual.
+ * Corresponde a la clase 'BilleteraVirtual' del diagrama UML.
+ */
+public class BilleteraVirtual {
+    private List<Usuario> usuarios;
+    private Usuario usuarioActivo; // Nuevo atributo para manejar el usuario logueado
+
+    // Constructor
+    public BilleteraVirtual() {
+        this.usuarios = new ArrayList<>();
+        this.usuarioActivo = null;
+    }
+
+    // Método registrarUsuario(Usuario u) del diagrama (simplificado del UML)
+    public void registrarUsuario(Usuario u) {
+        this.usuarios.add(u);
+        u.registrar();
+    }
+
+    // Método para manejar el inicio de sesión
+    public boolean loguearUsuario(String email, String password) {
+        Usuario usuario = buscarUsuario(email);
+        if (usuario != null && usuario.iniciarSesion(email, password)) {
+            this.usuarioActivo = usuario;
+            return true;
+        }
+        return false;
+    }
+    
+    // Método para manejar el cierre de sesión
+    public void desloguearUsuario() {
+        if (usuarioActivo != null) {
+            usuarioActivo.cerrarSesion();
+            usuarioActivo = null;
+        }
+    }
+
+    // Método para buscar usuario por email (necesario para la funcionalidad)
+    public Usuario buscarUsuario(String email) {
+        for (Usuario u : usuarios) {
+            if (u.getEmail().equalsIgnoreCase(email)) {
+                return u;
+            }
+        }
+        return null;
+    }
+
+    // Getter para el usuario activo
+    public Usuario getUsuarioActivo() {
+        return usuarioActivo;
+    }
+
+    // Método generarReporteGlobal() del diagrama
+    public String generarReporteGlobal() {
+        StringBuilder reporte = new StringBuilder();
+        reporte.append("--- Reporte Global del Sistema ---\n");
+        reporte.append("Total de Usuarios Registrados: ").append(usuarios.size()).append("\n");
+        
+        // Simulación: sumar saldos
+        double saldoTotal = 0.0;
+        for (Usuario u : usuarios) {
+            saldoTotal += u.getCuentaPrincipal().getSaldo();
+        }
+        
+        reporte.append("Saldo Total en el Sistema: $").append(String.format("%.2f", saldoTotal)).append("\n");
+
+        return reporte.toString();
+    }
+}
+
