@@ -1,0 +1,38 @@
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Clase que almacena la lista de Transacciones y Movimientos.
+ * Corresponde a la clase 'Historial' del diagrama UML.
+ */
+public class Historial {
+    // Almacena un String de movimiento para simplicidad, en lugar de objetos complejos
+    private List<String> movimientos;
+    private List<Transaccion> transacciones;
+
+    public Historial() {
+        this.movimientos = new ArrayList<>();
+        this.transacciones = new ArrayList<>();
+    }
+    
+    // Método agregarTransaccion(Transaccion t, String descripcion)
+    public void agregarTransaccion(Transaccion t, String descripcion) {
+        this.transacciones.add(t);
+        this.movimientos.add(descripcion + " (Transacción ID: " + t.getIdTransaccion().substring(0, 8) + "...)");
+    }
+
+    // Método obtenerMovimientos() del diagrama
+    public String obtenerMovimientos() {
+        if (movimientos.isEmpty()) {
+            return "No hay movimientos registrados.";
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("--- Últimos Movimientos ---\n");
+        for (int i = movimientos.size() - 1; i >= 0 && i >= movimientos.size() - 10; i--) {
+            sb.append(movimientos.get(i)).append("\n");
+        }
+        return sb.toString();
+    }
+}
+
